@@ -4,6 +4,8 @@
 # Whitelist index.html
 !index.html
 !README.md
+!esp32-s3_datasheet_en.pdf
+!esp32-s3_technical_reference_manual_en.pdf
 
 # Whitelist this .gitignore file so it remains tracked
 !.gitignore
