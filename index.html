@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>AI Robotics — by ENG. Youssef Goher</title>
+<meta name="description" content="AI Robotics — a six-lecture curriculum by ENG. Youssef Goher integrating ESP32 microcontrollers, MicroPython, sensors, and the Google Gemini LLM API.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='15' y='15' width='70' height='70' fill='%23B4611F'/><text x='50' y='68' font-size='46' text-anchor='middle' fill='white' font-family='monospace' font-weight='bold'>AI</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EEF3F1;
+  --grid:rgba(27,42,47,.055);
+  --ink:#1B2A2F;
+  --ink-soft:#46595F;
+  --copper:#B4611F;
+  --copper-deep:#8C4A15;
+  --copper-tint:#F6E7D6;
+  --signal:#4A4FC4;
+  --signal-deep:#34379B;
+  --signal-tint:#E4E5F8;
+  --pad:#93A7AC;
+  --card:#FBFCFB;
+  --line:rgba(27,42,47,.16);
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --sans:'IBM Plex Sans',system-ui,sans-serif;
+  --disp:'Chakra Petch',var(--sans);
+}
+
+/* ---------- responsive resets ---------- */
+*{box-sizing:border-box;margin:0;padding:0}
+
+html{scroll-behavior:smooth;}
+body{
+  font-family:var(--sans);color:var(--ink);background:var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;
+  line-height:1.65;font-size:16.5px;
+}
+img, svg { max-width: 100%; height: auto; display: block; }
+::selection{background:var(--copper);color:#fff}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:rgba(238,243,241,.92);backdrop-filter:blur(8px);
+  border-bottom:1.5px solid var(--ink);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.65rem clamp(1rem,4vw,3rem);
+  font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;
+  flex-wrap: wrap; gap: 0.8rem;
+}
+.topbar .id{font-weight:600}
+.topbar .id span{color:var(--copper)}
+.topbar nav{display:flex;gap:1.2rem;align-items:center;flex-wrap: wrap;}
+.topbar a{color:var(--ink-soft);text-decoration:none}
+.topbar a:hover,.topbar a:focus-visible{color:var(--ink);text-decoration:underline}
+.topbar a:focus-visible{outline:2px solid var(--signal);outline-offset:3px}
+@media(max-width:640px){
+  .topbar{justify-content:center;font-size:.66rem;padding:0.8rem 1rem;}
+  .topbar nav{justify-content:center;gap:0.85rem;}
+}
+
+/* ---------- hero ---------- */
+.hero{
+  width: 100%; max-width:1120px;margin:0 auto;
+  padding:clamp(2rem,7vw,5.5rem) clamp(1rem,4vw,3rem) clamp(2rem,5vw,3.5rem);
+}
+.eyebrow{
+  font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--copper-deep);display:flex;align-items:center;gap:.7rem;margin-bottom:1.2rem;
+  flex-wrap: wrap;
+}
+.eyebrow::before{content:"";width:34px;height:2px;background:var(--copper)}
+h1{
+  font-family:var(--disp);font-weight:700;
+  font-size:clamp(2rem,6.4vw,4.4rem);line-height:1.08;
+  letter-spacing:-.01em;text-transform:uppercase;
+  word-wrap: break-word;
+}
+.hero .subline{
+  font-family:var(--disp);font-weight:600;font-size:clamp(.95rem,2vw,1.25rem);
+  letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-top:.9rem;
+}
+.subline .body-w{color:var(--copper)}
+.subline .brain-w{color:var(--signal)}
+.hero .lede{
+  width: 100%; max-width:60ch;margin-top:1.4rem;color:var(--ink-soft);
+  font-size:clamp(1rem,1.4vw,1.12rem);
+}
+.byline{
+  display:inline-flex;align-items:center;gap:.75rem;margin-top:1.6rem;
+  border:1.5px solid var(--ink);background:var(--card);
+  padding:.5rem .9rem .5rem .6rem;text-decoration:none;color:var(--ink);
+  transition:transform .15s ease,box-shadow .15s ease;
+  max-width: 100%; box-sizing: border-box;
+}
+.byline:hover,.byline:focus-visible{transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--copper)}
+.byline:focus-visible{outline:2px solid var(--signal);outline-offset:3px}
+.byline .avatar-img{
+  width:44px;height:44px;flex:none;object-fit:cover;
+  border:1.5px solid var(--ink);background:var(--pad);
+}
+.byline .who{line-height:1.3; overflow: hidden;}
+.byline .who b{font-family:var(--disp);font-size:.92rem;letter-spacing:.04em;text-transform:uppercase;display:block; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;}
+.byline .who span{font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;color:var(--ink-soft);text-transform:uppercase; display:block; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;}
+.byline .ext{font-family:var(--mono);font-size:.8rem;color:var(--copper-deep)}
+.hero .stack-tag{display:flex;gap:.55rem;flex-wrap:wrap;margin-top:1.5rem}
+.stack-tag span{
+  font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;
+  border:1.5px solid var(--ink);padding:.28rem .6rem;background:var(--card);
+  word-wrap: break-word;
+}
+
+/* ---------- schematic ---------- */
+.schematic{
+  width: 100%; max-width:1120px;margin:0 auto;padding:0 clamp(1rem,4vw,3rem) clamp(2.5rem,5vw,4rem);
+}
+.schematic svg{width:100%;height:auto;border:1.5px solid var(--ink);background:var(--card)}
+.schematic svg.sch-desktop{display:block}
+.schematic svg.sch-mobile{display:none}
+.sch-caption{
+  font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;color:var(--ink-soft);
+  padding:.5rem .2rem 0;text-transform:uppercase; display:block; word-wrap: break-word;
+}
+@media(max-width:640px){
+  .schematic svg.sch-desktop{display:none}
+  .schematic svg.sch-mobile{display:block}
+}
+@media (prefers-reduced-motion:reduce){
+  .pdot{display:none}
+  html{scroll-behavior:auto}
+  .body-side .node, .brain-side .node{animation:none}
+}
+
+/* ---------- intro block ---------- */
+.intro{
+  width: 100%; max-width:1120px;margin:0 auto;padding:0 clamp(1rem,4vw,3rem) clamp(3rem,6vw,4.5rem);
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:2.4rem;
+}
+.intro p{color:var(--ink-soft); width: 100%;}
+.intro p strong{color:var(--ink)}
+@media(max-width:800px){.intro{grid-template-columns:minmax(0,1fr); gap: 1.5rem;}}
+
+/* ---------- phase bands ---------- */
+.phase{
+  border-top:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);
+  padding:1.1rem clamp(1rem,4vw,3rem);
+  display:flex;align-items:baseline;gap:1.2rem;flex-wrap:wrap;
+  width: 100%; box-sizing: border-box;
+}
+.phase.body-phase{background:var(--copper-tint)}
+.phase.brain-phase{background:var(--signal-tint)}
+.phase .ph-num{font-family:var(--disp);font-weight:700;font-size:1.05rem;letter-spacing:.14em;text-transform:uppercase; white-space: nowrap;}
+.body-phase .ph-num{color:var(--copper-deep)}
+.brain-phase .ph-num{color:var(--signal-deep)}
+.phase .ph-title{font-family:var(--disp);font-weight:600;font-size:1.05rem;text-transform:uppercase;letter-spacing:.05em}
+.phase .ph-sub{font-family:var(--mono);font-size:.72rem;color:var(--ink-soft);letter-spacing:.06em;margin-left:auto;}
+@media(max-width:640px){.phase .ph-sub{margin-left:0; width: 100%;}}
+
+/* ---------- lecture layout with trace ---------- */
+.track{width: 100%; max-width:1120px;margin:0 auto;padding:0 clamp(1rem,4vw,3rem)}
+.lecture{
+  display:grid;grid-template-columns:84px minmax(0,1fr);
+  padding:clamp(2.2rem,5vw,3.4rem) 0;
+  width: 100%; box-sizing: border-box;
+}
+.rail{position:relative}
+.rail::before{content:"";position:absolute;left:24px;top:0;bottom:0;width:3px}
+.body-side .rail::before,.body-side.rail-solo::before{background:var(--copper)}
+.brain-side .rail::before,.brain-side.rail-solo::before{background:var(--signal)}
+
+@keyframes pulseNodeBody {
+  0% { box-shadow: 0 0 0 0 rgba(180, 97, 31, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(180, 97, 31, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(180, 97, 31, 0); }
+}
+@keyframes pulseNodeBrain {
+  0% { box-shadow: 0 0 0 0 rgba(74, 79, 196, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(74, 79, 196, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(74, 79, 196, 0); }
+}
+
+.node{
+  position:sticky;top:84px;
+  width:50px;height:50px;border:3px solid;border-radius:50%;
+  background:var(--paper);display:flex;align-items:center;justify-content:center;
+  font-family:var(--disp);font-weight:700;font-size:1rem; z-index: 10;
+}
+.body-side .node{border-color:var(--copper);color:var(--copper-deep); animation: pulseNodeBody 2.5s infinite;}
+.brain-side .node{border-color:var(--signal);color:var(--signal-deep); animation: pulseNodeBrain 2.5s infinite;}
+.node::after{content:"";position:absolute;inset:6px;border-radius:50%;border:1.5px dashed currentColor;opacity:.45}
+
+@media(max-width:640px){
+  .lecture{grid-template-columns:52px minmax(0,1fr)}
+  .rail::before{left:16px}
+  .node{width:34px;height:34px;font-size:.8rem;border-width:2.5px; top: 100px;}
+}
+@media(max-width:400px){
+  .lecture{grid-template-columns:36px minmax(0,1fr)}
+  .rail::before{left:12px}
+  .node{width:26px;height:26px;font-size:.65rem;border-width:2px; top: 110px;}
+  .node::after{inset:3px;}
+}
+
+.lec-head{margin-bottom:1.4rem; width: 100%;}
+.lec-kicker{font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:.35rem; word-wrap: break-word;}
+.body-side .lec-kicker b{color:var(--copper-deep)}
+.brain-side .lec-kicker b{color:var(--signal-deep)}
+h2{
+  font-family:var(--disp);font-weight:700;font-size:clamp(1.5rem,3.4vw,2.15rem);
+  line-height:1.15;text-transform:uppercase;letter-spacing:.005em; word-wrap: break-word;
+}
+h3{
+  font-family:var(--disp);font-weight:600;font-size:1.02rem;letter-spacing:.05em;text-transform:uppercase;
+  margin:2rem 0 .7rem;display:flex;align-items:flex-start;gap:.6rem; word-wrap: break-word;
+}
+h3::before{content:"";width:10px;height:10px;transform:rotate(45deg);flex:none; margin-top: 0.35rem;}
+.body-side h3::before{background:var(--copper)}
+.brain-side h3::before{background:var(--signal)}
+.lecture p,.phase-lede p{margin-bottom:1rem;color:var(--ink-soft);width: 100%; max-width:76ch;}
+.lecture p strong,.phase-lede strong{color:var(--ink)}
+.lecture ul,.lecture ol{margin:0 0 1rem 1.3rem;color:var(--ink-soft);width: 100%; max-width:74ch;}
+.lecture li{margin-bottom:.55rem; word-wrap: break-word;}
+.lecture li strong{color:var(--ink)}
+
+code{
+  font-family:var(--mono);font-size:.86em;background:var(--card);
+  border:1px solid var(--line);padding:.06em .34em;
+  white-space:pre-wrap; word-break: break-word;
+  display: inline-block;
+}
+.formula{
+  font-family:var(--mono);background:var(--card);border:1.5px solid var(--ink);
+  padding:1rem 1.2rem;margin:1.2rem 0;font-size:.92rem;
+  width: 100%; max-width:640px; overflow-x:auto; -webkit-overflow-scrolling: touch; box-sizing: border-box;
+}
+.formula .fm{font-size:1.05rem;font-weight:600;display:block;margin-bottom:.6rem; white-space: nowrap;}
+.formula small{color:var(--ink-soft);display:block;line-height:1.55; white-space: normal;}
+
+.tbl-wrap{
+  width: 100%; max-width:760px; overflow-x:auto; -webkit-overflow-scrolling: touch; 
+  margin:1.2rem 0 1.6rem;border:1.5px solid var(--ink);background:var(--card); box-sizing: border-box;
+}
+table{border-collapse:collapse;width:100%;font-size:.88rem;min-width:480px}
+caption{
+  text-align:left;font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+  padding:.55rem .9rem;border-bottom:1.5px solid var(--ink);color:var(--ink);font-weight:600;
+}
+.body-side caption{background:var(--copper-tint)}
+.brain-side caption{background:var(--signal-tint)}
+th,td{padding:.55rem .9rem;border-bottom:1px solid var(--line);text-align:left;vertical-align:top; word-wrap: break-word;}
+th{font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);font-weight:600}
+td code{white-space: pre-wrap; word-break: break-word; display: inline-block;}
+tr:last-child td{border-bottom:none}
+td:first-child{font-weight:600;color:var(--ink);}
+
+.project{
+  border:1.5px solid var(--ink);background:var(--card);
+  margin:1.8rem 0 .4rem; width: 100%; max-width:760px;position:relative; box-sizing: border-box;
+}
+.project .pj-tab{
+  font-family:var(--mono);font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;
+  display:flex;align-items:center;gap:.6rem;
+  padding:.5rem .95rem;border-bottom:1.5px solid var(--ink);color:#fff; word-wrap: break-word;
+}
+.body-side .pj-tab{background:var(--copper)}
+.brain-side .pj-tab{background:var(--signal)}
+.pj-tab::before{content:"▸"}
+.project .pj-body{padding:1rem 1.1rem 1.1rem}
+.project h4{font-family:var(--disp);font-weight:700;font-size:1.06rem;margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.02em; word-wrap: break-word;}
+.project p{margin-bottom:.7rem; width: 100%;}
+.project p:last-child{margin-bottom:0}
+
+.loop{counter-reset:step;margin:1.2rem 0 1.4rem;width: 100%; max-width:76ch}
+.loop li{list-style:none;position:relative;padding-left:3rem;margin-bottom:.9rem; word-wrap: break-word;}
+.loop li::before{
+  counter-increment:step;content:counter(step,decimal-leading-zero);
+  position:absolute;left:0;top:.1em;
+  font-family:var(--disp);font-weight:700;font-size:.86rem;color:var(--signal-deep);
+  border:1.5px solid var(--signal);padding:.05rem .4rem;background:var(--card);
+}
+
+.phase-lede{padding:2.2rem 0 0 84px; width: 100%; max-width:840px; box-sizing: border-box;}
+@media(max-width:640px){
+  .phase-lede{padding-left:52px}
+}
+@media(max-width:400px){
+  .phase-lede{padding-left:36px}
+}
+
+.cited{
+  border-top:1.5px solid var(--ink);margin-top:1rem;
+  padding:clamp(2.5rem,5vw,4rem) clamp(1rem,4vw,3rem) 4rem;
+  width: 100%; max-width:1120px;margin-inline:auto; box-sizing: border-box;
+}
+.cited h2{margin-bottom:1.4rem}
+.cited ol{
+  columns:2;column-gap:3rem;font-family:var(--mono);font-size:.74rem;line-height:1.6;
+  margin-left:1.2rem;color:var(--ink-soft);
+}
+.cited li{margin-bottom:.65rem;break-inside:avoid; word-wrap: break-word;}
+.cited a{color:var(--signal-deep);text-decoration:none;word-break:break-all}
+.cited a:hover,.cited a:focus-visible{text-decoration:underline}
+@media(max-width:800px){.cited ol{columns:1}}
+
+footer{
+  border-top:1.5px solid var(--ink);
+  font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-soft);display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  padding:1rem clamp(1rem,4vw,3rem) 2.5rem; width: 100%; max-width:1120px;margin:0 auto; box-sizing: border-box;
+}
+footer a{color:var(--copper-deep);text-decoration:none}
+footer a:hover{text-decoration:underline}
+
+@media(max-width:640px){
+  body{font-size:15.5px}
+  .byline{width:100%;justify-content:flex-start}
+  .formula{font-size:.82rem}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="id">AI ROBOTICS <span>//</span> ESP32 × GEMINI</div>
+  <nav>
+    <a href="#l1">L1</a><a href="#l2">L2</a><a href="#l3">L3</a>
+    <a href="#l4">L4</a><a href="#l5">L5</a><a href="#l6">L6</a>
+    <a href="#cited">REFS</a>
+    <a href="https://youssefgoher.github.io/" target="_blank" rel="noopener">INSTRUCTOR ↗</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <p class="eyebrow">Course Datasheet · Rev 6.0 · Six-Lecture Framework</p>
+  <h1>AI Robotics</h1>
+  <p class="subline">The <span class="body-w">Body</span> &amp; the <span class="brain-w">Brain</span></p>
+  <p class="lede">A comprehensive framework for autonomous AI-commanded robotics — integrating ESP32 microcontrollers, sensor acquisition, and Large Language Models. From bare-metal GPIO registers to cloud-based probabilistic cognition, orchestrated entirely in Python.</p>
+  <a class="byline" href="https://youssefgoher.github.io/" target="_blank" rel="noopener">
+    <img class="avatar-img" src="https://avatars.githubusercontent.com/u/127972819?v=4" alt="ENG. Youssef Goher" loading="lazy">
+    <span class="who">
+      <b>by ENG. Youssef Goher</b>
+      <span>Embedded Systems · IoT · EgySpark</span>
+    </span>
+    <span class="ext">↗</span>
+  </a>
+  <div class="stack-tag">
+    <span>ESP32 · XTENSA LX6</span><span>MICROPYTHON 3</span><span>HC-SR04</span><span>L298N H-BRIDGE</span><span>GEMINI 1.5 FLASH API</span><span>JSON / REST</span>
+  </div>
+</section>
+
+<figure class="schematic" aria-label="System schematic: sensor to ESP32 to cloud LLM to motor driver">
+  <svg class="sch-desktop" viewBox="0 0 940 300" xmlns="http://www.w3.org/2000/svg" role="img">
+    <defs>
+      <marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" fill="#1B2A2F"/></marker>
+    </defs>
+    <rect x="40" y="115" width="110" height="64" fill="none" stroke="#B4611F" stroke-width="2.5"/>
+    <text x="95" y="142" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="#8C4A15" font-weight="600">HC-SR04</text>
+    <text x="95" y="160" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#46595F">40 kHz SONAR</text>
+    <rect x="340" y="95" width="130" height="104" fill="#F6E7D6" stroke="#1B2A2F" stroke-width="2.5"/>
+    <text x="405" y="135" text-anchor="middle" font-family="Chakra Petch" font-size="16" font-weight="700" fill="#1B2A2F">ESP32</text>
+    <text x="405" y="153" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#46595F">DUAL-CORE 240MHz</text>
+    <text x="405" y="168" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#46595F">MICROPYTHON</text>
+    <g stroke="#1B2A2F" stroke-width="2">
+      <line x1="356" y1="95" x2="356" y2="85"/><line x1="380" y1="95" x2="380" y2="85"/><line x1="404" y1="95" x2="404" y2="85"/><line x1="428" y1="95" x2="428" y2="85"/><line x1="452" y1="95" x2="452" y2="85"/>
+      <line x1="356" y1="199" x2="356" y2="209"/><line x1="380" y1="199" x2="380" y2="209"/><line x1="428" y1="199" x2="428" y2="209"/><line x1="452" y1="199" x2="452" y2="209"/>
+    </g>
+    <rect x="710" y="40" width="190" height="78" rx="39" fill="#E4E5F8" stroke="#4A4FC4" stroke-width="2.5"/>
+    <text x="805" y="74" text-anchor="middle" font-family="Chakra Petch" font-size="14" font-weight="700" fill="#34379B">GEMINI LLM</text>
+    <text x="805" y="94" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#46595F">temp=0.1 · JSON</text>
+    <rect x="710" y="210" width="190" height="58" fill="none" stroke="#B4611F" stroke-width="2.5"/>
+    <text x="805" y="234" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="#8C4A15" font-weight="600">L298N → M1/M2</text>
+    <text x="805" y="252" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#46595F">DUAL H-BRIDGE</text>
+    <g fill="none" stroke="#1B2A2F" stroke-width="2">
+      <path d="M150 147 L336 147" marker-end="url(#arr)"/>
+      <path d="M470 122 L640 122 L640 79 L706 79" stroke-dasharray="6 5" marker-end="url(#arr)"/>
+      <path d="M760 118 L760 172 L474 172" stroke-dasharray="6 5" marker-end="url(#arr)"/>
+      <path d="M404 209 L404 239 L706 239" marker-end="url(#arr)"/>
+    </g>
+    <text x="243" y="137" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#46595F">ECHO µs → cm</text>
+    <text x="553" y="112" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#46595F">POST /generateContent</text>
+    <text x="612" y="190" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#46595F">{"command":"reverse_right"}</text>
+    <text x="560" y="257" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#46595F">PWM duty_u16</text>
+    <circle class="pdot" r="4.5" fill="#B4611F"><animateMotion dur="2.4s" repeatCount="indefinite" path="M150 147 L336 147"/></circle>
+    <circle class="pdot" r="4.5" fill="#4A4FC4"><animateMotion dur="2.4s" repeatCount="indefinite" begin="0.6s" path="M470 122 L640 122 L640 79 L706 79"/></circle>
+    <circle class="pdot" r="4.5" fill="#4A4FC4"><animateMotion dur="2.4s" repeatCount="indefinite" begin="1.2s" path="M760 118 L760 172 L474 172"/></circle>
+    <circle class="pdot" r="4.5" fill="#B4611F"><animateMotion dur="2.4s" repeatCount="indefinite" begin="1.8s" path="M404 209 L404 239 L706 239"/></circle>
+  </svg>
+  <svg class="sch-mobile" viewBox="0 0 420 560" xmlns="http://www.w3.org/2000/svg" role="img">
+    <defs>
+      <marker id="arrM" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" fill="#1B2A2F"/></marker>
+    </defs>
+    <rect x="115" y="25" width="190" height="58" fill="none" stroke="#B4611F" stroke-width="2.5"/>
+    <text x="210" y="50" text-anchor="middle" font-family="IBM Plex Mono" font-size="13" fill="#8C4A15" font-weight="600">HC-SR04</text>
+    <text x="210" y="68" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#46595F">40 kHz SONAR</text>
+    <rect x="130" y="140" width="160" height="96" fill="#F6E7D6" stroke="#1B2A2F" stroke-width="2.5"/>
+    <text x="210" y="178" text-anchor="middle" font-family="Chakra Petch" font-size="16" font-weight="700" fill="#1B2A2F">ESP32</text>
+    <text x="210" y="196" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" fill="#46595F">DUAL-CORE 240MHz</text>
+    <text x="210" y="211" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" fill="#46595F">MICROPYTHON</text>
+    <g stroke="#1B2A2F" stroke-width="2">
+      <line x1="290" y1="160" x2="300" y2="160"/><line x1="290" y1="188" x2="300" y2="188"/><line x1="290" y1="216" x2="300" y2="216"/>
+    </g>
+    <rect x="95" y="316" width="230" height="72" rx="36" fill="#E4E5F8" stroke="#4A4FC4" stroke-width="2.5"/>
+    <text x="210" y="348" text-anchor="middle" font-family="Chakra Petch" font-size="15" font-weight="700" fill="#34379B">GEMINI LLM</text>
+    <text x="210" y="368" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#46595F">temp=0.1 · JSON</text>
+    <rect x="95" y="460" width="230" height="58" fill="none" stroke="#B4611F" stroke-width="2.5"/>
+    <text x="210" y="484" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="#8C4A15" font-weight="600">L298N → M1/M2</text>
+    <text x="210" y="502" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#46595F">DUAL H-BRIDGE</text>
+    <g fill="none" stroke="#1B2A2F" stroke-width="2">
+      <path d="M210 83 L210 136" marker-end="url(#arrM)"/>
+      <path d="M185 236 L185 312" stroke-dasharray="6 5" marker-end="url(#arrM)"/>
+      <path d="M235 316 L235 240" stroke-dasharray="6 5" marker-end="url(#arrM)"/>
+      <path d="M130 210 L55 210 L55 489 L91 489" marker-end="url(#arrM)"/>
+    </g>
+    <text x="222" y="115" font-family="IBM Plex Mono" font-size="9.5" fill="#46595F">ECHO µs → cm</text>
+    <text transform="rotate(-90 172 276)" x="172" y="276" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#46595F">POST / prompt</text>
+    <text transform="rotate(90 250 276)" x="250" y="276" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#46595F">JSON command</text>
+    <text transform="rotate(-90 44 350)" x="44" y="350" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#46595F">PWM duty_u16</text>
+    <text x="210" y="545" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" fill="#46595F">{"command":"reverse_right"}</text>
+    <circle class="pdot" r="4.5" fill="#B4611F"><animateMotion dur="2s" repeatCount="indefinite" path="M210 83 L210 134"/></circle>
+    <circle class="pdot" r="4.5" fill="#4A4FC4"><animateMotion dur="2s" repeatCount="indefinite" begin="0.5s" path="M185 236 L185 310"/></circle>
+    <circle class="pdot" r="4.5" fill="#4A4FC4"><animateMotion dur="2s" repeatCount="indefinite" begin="1s" path="M235 316 L235 242"/></circle>
+    <circle class="pdot" r="4.5" fill="#B4611F"><animateMotion dur="2.6s" repeatCount="indefinite" begin="1.5s" path="M130 210 L55 210 L55 489 L89 489"/></circle>
+  </svg>
+  <figcaption class="sch-caption">FIG.0 — Closed-loop cyber-physical signal path: acquisition → cognition → actuation</figcaption>
+</figure>
+
+<section class="intro">
+  <p>The synthesis of edge computing, hardware actuation, and cloud-based artificial intelligence represents a definitive paradigm shift in modern autonomous robotics. Traditional robotic systems have long relied on deterministic, state-machine-driven logic, which severely limits their adaptability to unpredictable environmental variables. This analysis details an exhaustive, <strong>six-lecture curriculum</strong> designed to bridge the chasm between low-level hardware abstraction and high-level probabilistic cognitive processing. Utilizing the ESP32 microcontroller and the Google Gemini Large Language Model (LLM) API, the framework is divided into two distinct pedagogical and technical domains: <strong>"The Body"</strong> (Phase 1) focuses on physical computing, electronic transduction, hardware abstraction, and locomotion; <strong>"The Brain"</strong> (Phase 2) transitions into cloud intelligence, prompt engineering, network protocols, and Application Programming Interface (API) integration.</p>
+  <p>Crucially, this architecture relies entirely on Python — specifically its embedded counterpart, <strong>MicroPython</strong>. The integration of Python across the entire stack, from bare-metal register manipulation to cloud-based JSON parsing, allows for unprecedented rapid prototyping, demonstrating how high-level object-oriented paradigms can effectively orchestrate complex cyber-physical systems.</p>
+</section>
+
+<!-- ============ PHASE 1 ============ -->
+<div class="phase body-phase" id="phase1">
+  <span class="ph-num">Phase 1</span>
+  <span class="ph-title">The Body — Hardware &amp; Robotics</span>
+  <span class="ph-sub">TRANSDUCTION · GPIO · PWM · H-BRIDGE</span>
+</div>
+
+<div class="track body-side">
+
+  <!-- LECTURE 1 -->
+  <article class="lecture" id="l1">
+    <div class="rail"><div class="node">L1</div></div>
+    <div class="lec-content">
+      <header class="lec-head">
+        <p class="lec-kicker"><b>Lecture 01</b> · The Body</p>
+        <h2>Foundation — Setup &amp; Python Essentials</h2>
+      </header>
+
+      <p>The architecture of contemporary Internet of Things (IoT) robotics relies heavily on powerful, low-cost microcontrollers capable of multitasking and wireless communication. The <strong>ESP32</strong> serves as the foundational hardware for this curriculum. Manufactured by Espressif Systems, the ESP32 is a premier System-on-a-Chip (SoC) featuring a dual-core Xtensa 32-bit LX6 microprocessor operating at up to 240&nbsp;MHz. This architecture is augmented by integrated 802.11 b/g/n Wi-Fi and Bluetooth v4.2 BR/EDR and BLE, making it an ideal candidate for cloud-connected robotics.</p>
+      <p>Historically, microcontrollers of this class were programmed strictly in compiled, low-level languages like C or C++ (e.g., using the Arduino IDE or ESP-IDF). While C++ offers bare-metal execution speed and granular memory control, it introduces significant friction in the prototyping phase due to complex build toolchains, manual pointer management, and lengthy compile-flash-test cycles. The ESP32, however, possesses sufficient flash memory and Random Access Memory (RAM) to host a language interpreter — specifically, <strong>MicroPython</strong>.</p>
+
+      <h3>The Python Paradigm in Embedded Systems</h3>
+      <p>Python is an interpreted, high-level, dynamically typed language. In traditional desktop or server environments, Python abstracts memory management, garbage collection, and hardware interactions entirely away from the developer. MicroPython is a lean, highly efficient implementation of Python 3 designed explicitly to run on resource-constrained microcontrollers. It maintains the core syntax, semantics, and object-oriented capabilities of Python but replaces heavy standard libraries with hardware-specific modules, such as <code>machine</code> and <code>network</code>.</p>
+      <p>The primary advantage of deploying Python in a robotics context is <strong>state management and rapid iteration</strong>. MicroPython operates via a Read-Eval-Print Loop (REPL), which allows developers to execute Python code line-by-line directly on the microcontroller over a serial connection. This dynamic execution environment permits real-time testing of motor drivers and sensors without recompiling the entire codebase. Furthermore, Python's dynamic typing allows variables to change types at runtime, reducing the boilerplate code required in statically typed languages. Memory management is handled by MicroPython's internal garbage collector, which automatically reclaims memory occupied by objects that are no longer in use — preventing memory leaks that frequently plague novice C++ roboticists.</p>
+
+      <h3>General Purpose Input/Output (GPIO)</h3>
+      <p>At the lowest hardware level, digital control is achieved through General Purpose Input/Output (GPIO) pins. The ESP32 can configure these pins as inputs (to read external voltages) or outputs (to source or sink current to external components). In Python, this hardware abstraction is achieved through the <code>machine.Pin</code> class. Instantiating a pin object (e.g., <code>led = machine.Pin(2, machine.Pin.OUT)</code>) directly manipulates the microcontroller's internal registers to set the pin direction. Methods such as <code>led.on()</code>, <code>led.off()</code>, or <code>led.value(1)</code> allow the Python script to toggle the voltage state between 3.3V (HIGH) and 0V (LOW).</p>
+
+      <div class="project">
+        <div class="pj-tab">Project Build · L1</div>
+        <div class="pj-body">
+          <h4>The "SOS" Beacon — Morse Code Flasher</h4>
+          <p>The foundational project introduces digital output control through the creation of an automated Morse code beacon. The hardware consists of a Light Emitting Diode (LED) and an active piezoelectric buzzer wired in parallel to a single GPIO pin configured as a digital output.</p>
+          <p>Morse code is fundamentally a <strong>time-domain protocol</strong>. It relies on the precise manipulation of binary states over specific, relative durations. Implementing this in Python requires understanding control flow structures, variable timing, and data structures like dictionaries.</p>
+          <div class="tbl-wrap">
+            <table>
+              <caption>TBL.1 — Morse timing map</caption>
+              <thead><tr><th>Morse Element</th><th>Relative Time Unit</th><th>Python Implementation Logic</th></tr></thead>
+              <tbody>
+                <tr><td>Dot</td><td>1 unit</td><td><code>Pin.on()</code> followed by <code>time.sleep_ms(unit)</code></td></tr>
+                <tr><td>Dash</td><td>3 units</td><td><code>Pin.on()</code> followed by <code>time.sleep_ms(unit * 3)</code></td></tr>
+                <tr><td>Gap between parts</td><td>1 unit</td><td><code>Pin.off()</code> followed by <code>time.sleep_ms(unit)</code></td></tr>
+                <tr><td>Gap between letters</td><td>3 units</td><td><code>Pin.off()</code> followed by <code>time.sleep_ms(unit * 3)</code></td></tr>
+                <tr><td>Gap between words</td><td>7 units</td><td><code>Pin.off()</code> followed by <code>time.sleep_ms(unit * 7)</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>By defining a Python dictionary that maps alphanumeric characters to their Morse string representations (e.g., <code>{'S': '...', 'O': '---'}</code>), a Python script can parse an input string, look up the corresponding sequence, and iterate through the characters using a <code>for</code> loop. The <code>time.sleep_ms()</code> function is crucial here: it blocks the execution of the Python thread, maintaining the GPIO output state for the exact duration required to emit the distress signal (SOS). This exercise cements the developer's understanding of sequential script execution, the concept of blocking delays, and digital state manipulation.</p>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <!-- LECTURE 2 -->
+  <article class="lecture" id="l2">
+    <div class="rail"><div class="node">L2</div></div>
+    <div class="lec-content">
+      <header class="lec-head">
+        <p class="lec-kicker"><b>Lecture 02</b> · The Body</p>
+        <h2>The Senses — Data Acquisition &amp; Sensors</h2>
+      </header>
+
+      <p>For an autonomous robot to interact with its physical environment, it must possess mechanisms for data acquisition. Spatial awareness and obstacle avoidance are commonly achieved through time-of-flight (ToF) sensors. The <strong>HC-SR04 ultrasonic module</strong> serves as the industry standard for educational and prototype robotics due to its simplicity, cost-effectiveness, and reliability within short ranges (2&nbsp;cm to 400&nbsp;cm).</p>
+
+      <h3>Acoustic Transduction &amp; Reflection Physics</h3>
+      <p>The HC-SR04 operates on the physical principles of sonar. The module consists of two primary transducers: a piezoelectric transmitter and a piezoelectric receiver. The Python script commands the ESP32 to send a 10-microsecond HIGH pulse to the sensor's "Trigger" pin. This electrical signal stimulates the piezoelectric crystal, causing it to mechanically deform and emit a burst of eight ultrasonic acoustic pulses at a frequency of <strong>40&nbsp;kHz</strong>. This frequency is utilized because it is well above the threshold of human hearing and offers a highly directional acoustic beam.</p>
+      <p>When these longitudinal acoustic waves propagate through the air and encounter an object with a significantly different acoustic impedance, a portion of the acoustic energy is reflected back toward the sensor. The receiver crystal detects this echo, transduces the mechanical wave back into an electrical signal, and drives the "Echo" pin HIGH.</p>
+      <p>The mathematics of determining distance relies on the speed of sound in air, which is approximately 343 meters per second at standard temperature and pressure (20°C), translating to 0.0343 centimeters per microsecond. The fundamental physical formula implemented in the Python script is:</p>
+      <div class="formula">
+        <span class="fm">d = ( v × t ) ÷ 2</span>
+        <small>Where <b>d</b> is the calculated distance to the object, <b>v</b> is the velocity of sound in the medium (0.0343 cm/µs), and <b>t</b> is the total time elapsed between transmission of the pulse and reception of the echo. The division by 2 is essential to account for the two-way travel of the acoustic wave — to the object and back.</small>
+      </div>
+
+      <h3>Software Implementation &amp; State Logic</h3>
+      <p>To interface with the HC-SR04, the Python code must operate with microsecond precision. MicroPython facilitates this hardware-level timing via the <code>machine.time_pulse_us()</code> function. This function waits for a specified pin to change state (e.g., transitioning from LOW to HIGH) and returns the duration the pin remains in that state, measured in microseconds. This abstracts away the need to manually configure and read hardware timers, showcasing Python's ability to simplify complex embedded operations.</p>
+
+      <div class="project">
+        <div class="pj-tab">Project Build · L2</div>
+        <div class="pj-body">
+          <h4>Reverse Parking Sensor — Distance Warning System</h4>
+          <p>This project synthesizes sensor data acquisition with conditional Python logic to create an operational state machine. The script continuously polls the ultrasonic sensor inside an infinite <code>while True:</code> loop. The acquired microsecond value is mathematically transformed into a floating-point distance in centimeters.</p>
+          <p>Using Python's conditional control flow (<code>if</code>, <code>elif</code>, and <code>else</code> statements), the system evaluates the floating-point distance against predefined spatial thresholds:</p>
+          <ul>
+            <li>If the calculated distance falls between <strong>50&nbsp;cm and 149&nbsp;cm</strong>, the state is categorized as safe, and the Python <code>print()</code> function outputs <code>"Perfect!"</code> to the serial console.</li>
+            <li>If the distance falls <strong>below the 50&nbsp;cm threshold</strong>, the system triggers an internal warning state, printing <code>"* Too Close *"</code>.</li>
+          </ul>
+          <p>This closed-loop feedback mechanism represents the foundational definition of reactivity in robotics: acquire physical data, evaluate that data against software-defined parameters using Python logic, and output a corresponding state change.</p>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <!-- LECTURE 3 (merged 3+4) -->
+  <article class="lecture" id="l3">
+    <div class="rail"><div class="node">L3</div></div>
+    <div class="lec-content">
+      <header class="lec-head">
+        <p class="lec-kicker"><b>Lecture 03</b> · The Body</p>
+        <h2>Motion — PWM, Servos &amp; DC Locomotion</h2>
+      </header>
+
+      <p>While digital states are binary (strictly ON or OFF), mechanical systems often require granular, analog-like control for precision positioning. This is achieved through <strong>Pulse Width Modulation (PWM)</strong> — a technique that dictates the amount of average power delivered to a load by rapidly switching a digital signal HIGH and LOW at a specific frequency.</p>
+
+      <h3>PWM Fundamentals &amp; Servo Mechanics</h3>
+      <p>A standard hobby servo motor is a complex closed-loop system containing a small DC motor, a reduction gear train, a potentiometer attached to the output shaft for position feedback, and an internal control circuit. Unlike continuous DC motors that spin freely when power is applied, servos are commanded to rotate to specific angles (typically ranging between 0° and 180°).</p>
+      <p>This angle is dictated by a highly specific PWM signal. Servo motors generally require a control signal operating at a frequency of <strong>50&nbsp;Hz</strong>, which equates to a period of 20 milliseconds per cycle. The physical position of the servo shaft is determined by the duration (width) of the HIGH pulse within that 20-millisecond window.</p>
+      <div class="tbl-wrap">
+        <table>
+          <caption>TBL.2 — Servo pulse width vs. angle (50 Hz)</caption>
+          <thead><tr><th>Command Angle</th><th>Pulse Width</th><th>Theoretical Duty Cycle</th></tr></thead>
+          <tbody>
+            <tr><td>0° (Minimum)</td><td>~1.0 ms</td><td>5%</td></tr>
+            <tr><td>90° (Neutral / Center)</td><td>~1.5 ms</td><td>7.5%</td></tr>
+            <tr><td>180° (Maximum)</td><td>~2.0 ms</td><td>10%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><em>Note: the absolute pulse widths required for full-range motion can vary slightly by manufacturer, sometimes extending from 0.5&nbsp;ms to 2.5&nbsp;ms.</em></p>
+
+      <h3>MicroPython PWM Implementations</h3>
+      <p>The ESP32 microcontroller features dedicated hardware timers capable of generating PWM signals in the background without blocking the main Python CPU thread. In MicroPython, a PWM object is instantiated and bound to a specific GPIO pin using the <code>machine.PWM(Pin(X))</code> constructor, followed by setting the frequency using the <code>.freq(50)</code> method.</p>
+      <p>The duty cycle in MicroPython can be set using several numerical representations depending on the underlying timer resolution. The ESP32 supports 16-bit timer resolutions, allowing the duty cycle to be defined via <code>duty_u16()</code> (accepting values from 0 to 65,535) or by specifying the exact nanosecond pulse width via <code>duty_ns()</code>. When mapping simple integer values like 35, 75, and 115 to servo positions, this implies a specific fractional resolution (often an 8-bit or 10-bit integer mapping used in legacy implementations, where 0–1023 represents 0–100% duty cycle). For example, in a 10-bit system, a 1&nbsp;ms pulse (5% duty cycle) corresponds to a numerical value of roughly 51 (1023 × 0.05), and a 2&nbsp;ms pulse corresponds to 102. The values 35, 75, and 115 represent a tuned operational range to push the specific hardware to 0°, 90°, and 180° respectively.</p>
+
+      <div class="project">
+        <div class="pj-tab">Project Build · L3-A</div>
+        <div class="pj-body">
+          <h4>The "Gatekeeper" — Automated Security Barrier</h4>
+          <p>This project constructs a physical security barrier, demonstrating precision analog control. The Python script utilizes a finite <code>for</code> loop to increment the duty cycle variables smoothly, achieving a slow, sweeping motion rather than an abrupt, violent snap to the target position. By incrementally manipulating the duty cycle variable and applying small <code>time.sleep_ms(20)</code> pauses within the loop, the Python script ensures the mechanical gear train has time to physically reach the commanded micro-positions. This project highlights the critical intersection between the execution speed of Python software and the physical inertia of mechanical hardware.</p>
+        </div>
+      </div>
+
+      <h3>Locomotion — DC Motors &amp; the H-Bridge Problem</h3>
+      <p>To achieve unconstrained locomotion, an autonomous robot must utilize continuous direct current (DC) motors. However, microcontrollers cannot directly drive DC motors. Motors require significantly more current (often several hundred milliamperes to several amperes) than a standard GPIO pin can source, which is typically capped at a maximum of 12 to 40&nbsp;mA. Furthermore, inductive loads like motors generate reverse voltage spikes (back Electromotive Force, or EMF) when the magnetic field collapses, which will instantly destroy the sensitive logic gates of a microprocessor.</p>
+
+      <h3>The L298N Dual H-Bridge Motor Driver</h3>
+      <p>The standard solution to this electrical isolation and current amplification problem is a motor driver. The <strong>L298N</strong> is an industry-standard integrated circuit featuring two independent H-bridges. An H-bridge is a specialized topological circuit containing four solid-state switching elements (in the L298N, these are Bipolar Junction Transistors, or BJTs) configured in an "H" shape around the motor load. By selectively closing diagonally opposed switches via Python logic signals, the direction of the electrical current flowing through the motor can be reversed — thereby reversing the motor's physical rotational direction.</p>
+      <p>It is important to note the hardware limitations of the L298N. Because it utilizes older BJT technology rather than modern MOSFETs, it inherently drops approximately 2V across the internal switching transistors. Therefore, a 12V power supply will only deliver an effective 10V to the motors. The L298N module provides control over two motors simultaneously (Motor A and Motor B). The logical control is dictated by six pins connected to the ESP32:</p>
+      <div class="tbl-wrap">
+        <table>
+          <caption>TBL.3 — L298N control pin map</caption>
+          <thead><tr><th>Control Pin</th><th>Function</th><th>Target Connection</th></tr></thead>
+          <tbody>
+            <tr><td>IN1 &amp; IN2</td><td>Direction logic — Motor A</td><td>ESP32 GPIO (digital output)</td></tr>
+            <tr><td>IN3 &amp; IN4</td><td>Direction logic — Motor B</td><td>ESP32 GPIO (digital output)</td></tr>
+            <tr><td>ENA</td><td>Speed control — Motor A</td><td>ESP32 GPIO (PWM output)</td></tr>
+            <tr><td>ENB</td><td>Speed control — Motor B</td><td>ESP32 GPIO (PWM output)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>If IN1 is driven LOW and IN2 is driven HIGH, the motor rotates forward. If IN1 is HIGH and IN2 is LOW, it rotates backward. If both are LOW, the motor coasts to a stop. If both are HIGH, the H-bridge actively shorts the motor terminals, utilizing back-EMF to brake the motor sharply.</p>
+
+      <h3>Object-Oriented Python (OOP) for Hardware Abstraction</h3>
+      <p>Managing six independent GPIO pins and two PWM timers sequentially within a main script is prone to error, lacks modularity, and violates the principles of clean code. Python's Object-Oriented Programming (OOP) capabilities allow developers to encapsulate these complex hardware interactions into logical, reusable objects.</p>
+      <p>By defining a <code>DCMotor</code> Python class, the developer encapsulates the initialization of pins, the setup of PWM frequencies, and the logical H-bridge states. The class constructor method (<code>def __init__(self, pin1, pin2, enable_pin):</code>) accepts the specific pin numbers as parameters. Methods such as <code>.forward(speed)</code> abstract the underlying <code>IN1.value(0)</code>, <code>IN2.value(1)</code>, and <code>ENA.duty_u16(speed)</code> commands into a single, highly readable Python function call. This demonstrates the power of Python to abstract complex electronic signaling into semantic, human-readable commands.</p>
+
+      <div class="project">
+        <div class="pj-tab">Project Build · L3-B</div>
+        <div class="pj-body">
+          <h4>The Geometric Driver — Calibrated Square Path</h4>
+          <p>The final project of Phase 1 challenges the developer to program the robot to autonomously drive in a perfect square. Because the physical system lacks wheel encoders for closed-loop odometry, the navigation relies entirely on <strong>open-loop kinematic timing</strong>. The developer utilizes the custom <code>DCMotor</code> Python class to command forward motion at a precise speed (mapping a 0–100 integer to the 16-bit PWM duty cycle) for a mathematically calculated time duration. Following this, one motor is reversed while the other continues forward, forcing the chassis to spin on its central axis. By carefully calibrating the exact Python <code>time.sleep()</code> delay required to achieve a 90-degree physical turn, the script orchestrates a calibrated square path — proving the efficacy of the hardware abstraction layer.</p>
+        </div>
+      </div>
+    </div>
+  </article>
+</div>
+
+<!-- ============ PHASE 2 ============ -->
+<div class="phase brain-phase" id="phase2">
+  <span class="ph-num">Phase 2</span>
+  <span class="ph-title">The Brain — AI &amp; Integration</span>
+  <span class="ph-sub">LLM · PROMPT ENGINEERING · REST · JSON</span>
+</div>
+
+<div class="track brain-side">
+
+  <div class="phase-lede">
+    <p>Having firmly established the physical capabilities of the robot (locomotion, spatial sensing, actuation), the curriculum transitions to infusing the embedded system with higher-order cognitive processing. Traditional robotics relies on hardcoded rules, if/else trees, and deterministic pathfinding algorithms. Integrating a Large Language Model introduces <strong>probabilistic reasoning</strong>, allowing the robot to dynamically interpret unstructured environmental variables and generate context-aware, emergent decisions.</p>
+  </div>
+
+  <!-- LECTURE 4 -->
+  <article class="lecture" id="l4">
+    <div class="rail"><div class="node">L4</div></div>
+    <div class="lec-content">
+      <header class="lec-head">
+        <p class="lec-kicker"><b>Lecture 04</b> · The Brain</p>
+        <h2>The Brain I — LLMs &amp; Prompt Engineering</h2>
+      </header>
+
+      <p>Large Language Models, such as Google's Gemini, are sophisticated neural architectures based on the Transformer model, trained on massive datasets of human text, code, and structured data. Fundamentally, they operate by predicting the next most likely token based on the provided input context. To utilize an LLM as a logical controller for a physical robot, the model cannot be allowed to act as a free-form chatbot; it must be rigidly constrained and programmed using precise natural language instructions — a discipline known as <strong>prompt engineering</strong>.</p>
+
+      <h3>The 3-Layer Prompt Hierarchy</h3>
+      <p>To construct a reliable robotic cognitive engine, prompts must adhere to a strict architectural hierarchy:</p>
+      <ol>
+        <li><strong>Master / System Prompt (System Instructions):</strong> the persistent digital identity and overarching rule set of the AI. It dictates the model's fundamental behavior, operational boundaries, and output format. In the Gemini API, this is passed via the <code>systemInstruction</code> parameter, ensuring the model never forgets its primary directive, even as the conversation length grows.</li>
+        <li><strong>Context / Standard Prompts:</strong> the iterative, dynamic inputs provided to the model during operation. In this framework, the standard prompt consists of the real-time telemetry data gathered from the ultrasonic sensor.</li>
+        <li><strong>Few-Shot Examples:</strong> providing the model with structural examples of the exact input-output pairings expected, cementing the JSON formatting rules and preventing hallucination.</li>
+      </ol>
+
+      <h3>Model Parameters — Controlling Probabilistic Output</h3>
+      <p>LLM outputs are inherently probabilistic. When generating a response, the model calculates a probability distribution over its entire vocabulary. Developers can manipulate this distribution using specific parameters within the API payload:</p>
+      <ul>
+        <li><strong>Temperature:</strong> this parameter scales the internal logits before they are passed through the softmax function. A low temperature (e.g., 0.1 to 0.2) steepens the distribution, forcing the model to almost exclusively select the highest-probability token. This yields highly deterministic, analytical outputs — strictly required for generating code or robotic commands. Conversely, a high temperature (e.g., 0.8+) flattens the curve, allowing lower-probability tokens to be selected, yielding creative and varied text.</li>
+        <li><strong>Top-P (Nucleus Sampling):</strong> this parameter restricts token selection to a subset of tokens whose cumulative probability equals the Top-P value. For a navigational agent, setting Top-P low (e.g., 0.1) ensures the model only considers the most structurally sound responses.</li>
+      </ul>
+
+      <div class="project">
+        <div class="pj-tab">Project Build · L4</div>
+        <div class="pj-body">
+          <h4>Persona Architect — System Prompt Design</h4>
+          <p>This project requires drafting the system instructions for the robot using a highly constrained prompt formula: <code>[Role] + [Context] + [Task Detail] + [Negative Constraints] + [Desired Format]</code>.</p>
+          <p><strong>Negative constraints are the most critical element in AI robotics.</strong> LLMs have an inherent tendency to "hallucinate" conversational filler (e.g., "Sure, I can help with that! Based on the sensor data, here is your JSON:"). This extraneous text immediately breaks algorithmic JSON parsing on the ESP32. By explicitly utilizing negative constraints ("DO NOT provide conversational text. DO NOT explain your reasoning. ONLY output a valid JSON object"), the developer shapes the probabilistic LLM into a precise, deterministic software function suitable for machine-to-machine communication.</p>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <!-- LECTURE 5 (merged 6+7) -->
+  <article class="lecture" id="l5">
+    <div class="rail"><div class="node">L5</div></div>
+    <div class="lec-content">
+      <header class="lec-head">
+        <p class="lec-kicker"><b>Lecture 05</b> · The Brain</p>
+        <h2>The Bridge &amp; The Connection — APIs, Postman &amp; the ESP32 Client</h2>
+      </header>
+
+      <p>To connect the local microcontroller to the cloud-based AI, the system must traverse the internet utilizing standardized communication protocols. The Google Gemini API facilitates this via <strong>Representational State Transfer (REST)</strong> endpoints.</p>
+
+      <h3>REST APIs &amp; HTTP Protocols</h3>
+      <p>REST APIs utilize the Hypertext Transfer Protocol (HTTP) over TCP/IP sockets. When a client (the robot) requires data processing from Gemini, it formulates an HTTP <strong>POST</strong> request. The POST request encapsulates the required data within its body and sends it to a specific URL endpoint (e.g., <code>https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent</code>).</p>
+      <p>A successful API transaction requires precise header management. The HTTP headers must specify the <code>Content-Type</code> as <code>application/json</code> to inform the server of the payload format. Furthermore, authentication credentials must be provided — either via a specific header like <code>x-goog-api-key</code> or appended directly to the URL string as a query parameter (<code>?key=YOUR_API_KEY</code>) — authorizing the transaction.</p>
+
+      <h3>JSON Payload Architecture</h3>
+      <p>Data transmitted to and from the Gemini API is formatted exclusively in JSON (JavaScript Object Notation). JSON is a lightweight, human-readable data-interchange format built on two universal structures: collections of name/value pairs (analogous to Python dictionaries) and ordered lists of values (analogous to Python lists).</p>
+      <p>A request payload sent to the Gemini API requires a highly specific hierarchical schema. It contains a root <code>contents</code> array, which holds <code>parts</code> objects containing the text prompts. Furthermore, the <code>systemInstruction</code> object and the <code>generation_config</code> object (where parameters like <code>temperature</code> and <code>max_output_tokens</code> are strictly defined) are declared at the root level of the JSON payload.</p>
+
+      <div class="project">
+        <div class="pj-tab">Project Build · L5-A</div>
+        <div class="pj-body">
+          <h4>The API Inspector — Manual Intelligence Testing</h4>
+          <p>Before writing embedded Python code on the ESP32, the developer must validate the API interaction manually to avoid debugging network and logic errors simultaneously. Using <strong>Postman</strong> — a dedicated API development and testing environment — the developer constructs the exact POST request payload. By injecting mock sensor data into the payload and executing the request against the <code>gemini-1.5-flash</code> model, the developer inspects the raw JSON response returned by Google's servers.</p>
+          <p>Analyzing the response structure is paramount. The Gemini API returns a complex, nested JSON object where the actual text response generated by the model is buried several layers deep — specifically located at <code>response["candidates"][0]["content"]["parts"][0]["text"]</code>. Understanding this exact hierarchical path is an absolute prerequisite for writing the subsequent dictionary parsing logic in MicroPython.</p>
+        </div>
+      </div>
+
+      <h3>MicroPython Network Configuration</h3>
+      <p>Transitioning the cloud intelligence to the physical robot requires executing HTTP requests natively on the ESP32. This represents one of the most resource-intensive operations for a microcontroller, demanding careful handling of network interfaces, memory management, and data parsing constraints.</p>
+      <p>The ESP32 must first connect to a local Wi-Fi router to gain internet access. In MicroPython, the <code>network</code> module is utilized to instantiate a Wireless Local Area Network (WLAN) interface configured in Station Mode (<code>network.STA_IF</code>). Proper network management requires differentiating between the ESP32's two primary boot scripts:</p>
+      <ul>
+        <li><strong><code>boot.py</code>:</strong> executed immediately upon power-up or hard reset. It is an embedded best practice to place the Wi-Fi connection logic here. By executing <code>wlan.connect(ssid, password)</code> and waiting for <code>wlan.isconnected()</code> to return <code>True</code>, the board establishes network access before the main application runs.</li>
+        <li><strong><code>main.py</code>:</strong> runs automatically after <code>boot.py</code> completes and contains the primary application loop. Separating these concerns ensures that programmatic soft resets (<code>machine.soft_reset()</code>) used for error recovery do not needlessly drop and renegotiate the Wi-Fi connection, saving valuable boot time.</li>
+      </ul>
+
+      <h3>Executing HTTP Requests &amp; Serializing Data</h3>
+      <p>To send data to the Gemini API, MicroPython utilizes the <code>urequests</code> (micro-requests) module — a subset of the standard Python <code>requests</code> library optimized for constrained memory environments. To execute a POST request, the script first constructs a Python dictionary mirroring the required Gemini JSON schema.</p>
+      <p>However, a common failure point in embedded Python is attempting to pass a dictionary directly to <code>urequests.post()</code>, which yields a <code>TypeError: object with buffer protocol required</code>. The HTTP standard requires payloads to be transmitted as octet streams (bytes or strings). MicroPython provides the <code>ujson</code> module for this exact task: the <code>ujson.dumps()</code> (dump string) function serializes the hierarchical Python dictionary into a linear, UTF-8 encoded JSON string suitable for transmission over the TCP/IP socket.</p>
+
+      <h3>Memory Management &amp; Parsing</h3>
+      <p>When the API returns a response, the ESP32 receives a JSON-formatted text string. The <code>ujson.loads()</code> (load string) function deserializes this text back into a standard Python dictionary, allowing the developer to access the nested data using standard key-index notation.</p>
+      <p>Because the ESP32 possesses limited heap memory, handling unexpectedly large JSON strings from LLMs can easily trigger a <code>MemoryError</code>. Efficient embedded Python coding practices are vital. This includes configuring the API's <code>max_output_tokens</code> parameter to strictly bound the response size, and explicitly calling Python's garbage collector (<code>import gc; gc.collect()</code>) after the HTTP response object is parsed and closed (<code>response.close()</code>) to reclaim memory for the next loop iteration.</p>
+
+      <div class="project">
+        <div class="pj-tab">Project Build · L5-B</div>
+        <div class="pj-body">
+          <h4>The "Hello AI" Client</h4>
+          <p>The developer implements a standalone Python script to achieve the first successful wireless query. The ESP32 is programmed to connect to the Wi-Fi, construct a static prompt dictionary, serialize it via <code>ujson.dumps()</code>, append the API key to the URL, and execute the <code>urequests.post</code> command. The script then parses the response dictionary, extracts the deeply nested text payload, and prints it to the REPL console — proving bidirectional communication between the bare-metal hardware and the cloud AI.</p>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <!-- LECTURE 6 -->
+  <article class="lecture" id="l6">
+    <div class="rail"><div class="node">L6</div></div>
+    <div class="lec-content">
+      <header class="lec-head">
+        <p class="lec-kicker"><b>Lecture 06</b> · Capstone</p>
+        <h2>Capstone — The AI-Commanded Robot</h2>
+      </header>
+
+      <p>The culmination of the curriculum is the creation of a closed-loop cyber-physical system. The <strong>"Sentient Explorer"</strong> project synthesizes every prior concept: acoustic physics, PWM motor control, Object-Oriented Python, embedded networking, and probabilistic LLM reasoning.</p>
+
+      <h3>The Cyber-Physical Architecture</h3>
+      <p>In a closed-loop control system, output commands are continually adjusted based on incoming physical sensor feedback. For this robot, the continuous operational loop is orchestrated by the main Python script as follows:</p>
+      <ol class="loop">
+        <li><strong>Acquisition:</strong> the HC-SR04 ultrasonic sensor acquires raw microsecond data, which Python mathematical operations convert into a physical distance metric.</li>
+        <li><strong>Aggregation:</strong> the ESP32 utilizes Python f-strings to format this distance metric into a structured prompt context (e.g., <code>f"Sensor reading: Obstacle detected at {distance} cm. What is the optimal maneuver?"</code>).</li>
+        <li><strong>Transmission:</strong> the prompt is structured into a dictionary, serialized via <code>ujson.dumps()</code>, and transmitted to the Gemini API using <code>urequests.post()</code>.</li>
+        <li><strong>Cognition:</strong> the <code>gemini-1.5-flash</code> model evaluates the prompt against its Persona Architect system instructions in the cloud. It applies spatial reasoning to determine that, for instance, a 15&nbsp;cm reading represents an impending collision requiring evasive action.</li>
+        <li><strong>Response:</strong> the LLM generates a strictly formatted JSON response (forced by negative constraints and a low temperature parameter) containing a command directive (e.g., <code>{"command": "reverse_right"}</code>).</li>
+        <li><strong>Actuation:</strong> the ESP32 receives the JSON, parses the command string, and routes the logic using Python <code>if</code>/<code>elif</code> statements to the corresponding <code>DCMotor</code> OOP class methods. The L298N driver reverses the polarity of the H-bridge on one side, physically executing the pivot.</li>
+      </ol>
+
+      <h3>Fault Tolerance, Exception Handling &amp; Fail-Safes</h3>
+      <p>Relying on cloud AI for real-time motor control introduces severe vulnerabilities — primarily network latency and the risk of API timeouts. A robust robotic system must anticipate and gracefully handle failure. The final Python implementation mandates the use of <code>try...except</code> blocks around all network requests.</p>
+      <p>If the <code>urequests.post()</code> operation takes longer than a predefined timeout period, or if the Wi-Fi connection drops unexpectedly, the exception handler catches the error. Crucially, the exception block must immediately force the robot into a physically safe state by executing a <code>.stop()</code> method, setting all motor PWM duty cycles to zero to prevent runaway collisions. Furthermore, to recover from irrecoverable memory states, socket lockups, or continuous connection failures, the <code>machine.reset()</code> or <code>machine.soft_reset()</code> commands can be programmatically triggered within the exception handler to reboot the microcontroller cleanly.</p>
+
+      <div class="project">
+        <div class="pj-tab">Project Build · L6 — Final</div>
+        <div class="pj-body">
+          <h4>The Sentient Explorer</h4>
+          <p>By integrating the "Body" (sensors, servos, H-bridges) and the "Brain" (LLM prompt engineering, JSON APIs, network requests), the developer finalizes the Sentient Explorer. Unlike the open-loop Geometric Driver from Lecture 3, this robot reacts dynamically and intelligently to unpredictable environmental variables. The LLM acts as the central executive function, taking raw telemetry and converting it into semantic navigational decisions — ultimately bridging the gap between embedded electronics and state-of-the-art artificial intelligence.</p>
+        </div>
+      </div>
+    </div>
+  </article>
+</div>
+
+<!-- ============ WORKS CITED ============ -->
+<section class="cited" id="cited">
+  <h2>Works Cited</h2>
+  <ol>
+    <li>ESP32 MicroPython Quick Reference Guide | PDF — Scribd. <a href="https://www.scribd.com/document/634637759/ESP32-Doc">scribd.com/document/634637759/ESP32-Doc</a></li>
+    <li>7. Pulse Width Modulation — MicroPython documentation. <a href="https://docs.micropython.org/en/latest/esp8266/tutorial/pwm.html">docs.micropython.org/…/pwm.html</a></li>
+    <li>MicroPython With ESP32 — JustDoElectronics. <a href="https://justdoelectronics.com/esp32-with-micropython/">justdoelectronics.com/esp32-with-micropython</a></li>
+    <li>MicroPython: Motor Control. <a href="http://mpy-tut.zoic.org/tut/motors.html">mpy-tut.zoic.org/tut/motors.html</a></li>
+    <li>4.3 Swinging Servo — SunFounder ESP32 Starter Kit docs. <a href="https://docs.sunfounder.com/projects/esp32-starter-kit/en/latest/micropython/basic_projects/py_servo.html">docs.sunfounder.com/…/py_servo.html</a></li>
+    <li>MicroPython for Microcontrollers: Projects with Thonny-IDE, uPyCraft-IDE, and ESP32 — DOKUMEN.PUB. <a href="https://dokumen.pub/micropython-for-microcontrollers-projects-with-thonny-ide-upycraft-ide-and-esp32-9783895764370.html">dokumen.pub/…</a></li>
+    <li>class PWM — pulse width modulation — MicroPython documentation. <a href="https://docs.micropython.org/en/latest/library/machine.PWM.html">docs.micropython.org/…/machine.PWM.html</a></li>
+    <li>Huzzah32 ESP32: PWM Sounds using Micropython — Kentaro Tanaka. <a href="http://kentarotanaka.com/huzzah32-esp32-pwm-sounds-using-micropython/">kentarotanaka.com/…</a></li>
+    <li>DC Servo Motor Guide — With ESP32 &amp; Arduino — DroneBot Workshop. <a href="https://dronebotworkshop.com/servoguide/">dronebotworkshop.com/servoguide</a></li>
+    <li>DC, Servo, Stepper Motors and Solenoids with the Pico — Adafruit Learning System. <a href="https://learn.adafruit.com/use-dc-stepper-servo-motor-solenoid-rp2040-pico?view=all">learn.adafruit.com/…</a></li>
+    <li>Servo Kit 180° — UIFlow2 Programming Guide. <a href="https://uiflow-micropython.readthedocs.io/en/2.4.1/units/servo180.html">uiflow-micropython.readthedocs.io/…/servo180.html</a></li>
+    <li>ESP32 In MicroPython: PWM And The Duty Cycle — I Programmer. <a href="https://www.i-programmer.info/programming/hardware/16543-esp32-in-micropython-pwm-and-the-duty-cycle.html">i-programmer.info/…</a></li>
+    <li>esp32-micropython-ssd1306-mpu6050-robot — Wokwi Simulator. <a href="https://wokwi.com/projects/443551139917446145">wokwi.com/projects/443551139917446145</a></li>
+    <li>micropython-microbit-kitronik-MOVE-motor — GitHub. <a href="https://github.com/KitronikLtd/micropython-microbit-kitronik-MOVE-motor/blob/master/KitronikMOVEMotor.py">github.com/KitronikLtd/…</a></li>
+    <li>Raspberry Pi Motor Control with L298N: Python Code Guide — Zbotic. <a href="https://zbotic.in/raspberry-pi-motor-control-with-l298n-python-code-guide/">zbotic.in/…</a></li>
+    <li>MicroPython Control DC Motor using L298N Driver ESP32 and ESP8266. <a href="https://microcontrollerslab.com/micropython-dc-motor-l298n-driver-esp32-esp8266/">microcontrollerslab.com/…</a></li>
+    <li>MicroPython: ESP32/ESP8266 DC Motor (L298N Driver) — Random Nerd Tutorials. <a href="https://randomnerdtutorials.com/micropython-esp32-esp8266-dc-motor-l298n/">randomnerdtutorials.com/…</a></li>
+    <li>Google AI Studio Guide: Every Feature Explained. <a href="https://emasterlabs.com/google-ai-studio-guide">emasterlabs.com/google-ai-studio-guide</a></li>
+    <li>Caching | Gemini API — Google AI for Developers. <a href="https://ai.google.dev/api/caching">ai.google.dev/api/caching</a></li>
+    <li>Implementing System Prompts in Gemini Pro for Chatbot Creation — Stack Overflow. <a href="https://stackoverflow.com/questions/78010681/implementing-system-prompts-in-gemini-pro-for-chatbot-creation">stackoverflow.com/questions/78010681</a></li>
+    <li>Dissecting Gemini API Call's Network Traffic — Keysight Blogs. <a href="https://www.keysight.com/blogs/en/tech/nwvs/2024/09/16/gemini-api-traffic-analysis">keysight.com/blogs/…</a></li>
+    <li>Gemini — Google AI Studio — LiteLLM. <a href="https://docs.litellm.ai/docs/providers/gemini">docs.litellm.ai/docs/providers/gemini</a></li>
+    <li>gemini-1.5-flash | [Collection Runner] LLM Model Eval — Postman API Network. <a href="https://www.postman.com/ai-on-postman/postman-ai-agent-builder/request/xqj3zf3/gemini-1-5-flash">postman.com/ai-on-postman/…</a></li>
+    <li>Models | Gemini API — Google AI for Developers. <a href="https://ai.google.dev/api/models">ai.google.dev/api/models</a></li>
+    <li>Get started with Gemini using the REST API — Google Colab. <a href="https://colab.research.google.com/github/google/generative-ai-docs/blob/main/site/en/gemini-api/docs/get-started/rest.ipynb">colab.research.google.com/…/rest.ipynb</a></li>
+    <li>Python Requests POST JSON: Best Practices &amp; Examples 2026 — Carmatec. <a href="https://www.carmatec.com/blog/python-requests-post-json-best-practices-examples/">carmatec.com/blog/…</a></li>
+    <li>Google Gemini — Portkey Docs. <a href="https://docs.portkey.ai/docs/integrations/llms/gemini">docs.portkey.ai/docs/integrations/llms/gemini</a></li>
+    <li>MicroPython: HTTP GET Requests with ESP32/ESP8266 — Random Nerd Tutorials. <a href="https://randomnerdtutorials.com/micropython-http-get-requests-esp32-esp8266/">randomnerdtutorials.com/…</a></li>
+    <li>Machine.reset() bricks board — micropython Discussion #9270 — GitHub. <a href="https://github.com/orgs/micropython/discussions/9270">github.com/orgs/micropython/discussions/9270</a></li>
+    <li>4. WLAN step by step — MicroPython documentation. <a href="https://docs.micropython.org/en/latest/wipy/tutorial/wlan.html">docs.micropython.org/…/wlan.html</a></li>
+    <li>Reset and Boot Sequence — MicroPython documentation. <a href="https://docs.micropython.org/en/latest/reference/reset_boot.html">docs.micropython.org/…/reset_boot.html</a></li>
+    <li>urequests — Network Request Module — Read the Docs. <a href="https://makeblock-micropython-api.readthedocs.io/en/latest/public_library/Third-party-libraries/urequests.html">makeblock-micropython-api.readthedocs.io/…</a></li>
+    <li>The Pico In MicroPython: HTTP Client — I Programmer. <a href="https://www.i-programmer.info/programming/hardware/15980-the-pico-in-micropython-http-client.html?start=1">i-programmer.info/…</a></li>
+    <li>json posts in micropython — Stack Overflow. <a href="https://stackoverflow.com/questions/53553018/json-posts-in-micropython">stackoverflow.com/questions/53553018</a></li>
+    <li>MicroPython urequests.post failures — Stack Overflow. <a href="https://stackoverflow.com/questions/46939183/micropython-urequests-post-failures">stackoverflow.com/questions/46939183</a></li>
+    <li>6. Reset and boot modes — MicroPython documentation. <a href="https://docs.micropython.org/en/latest/wipy/tutorial/reset.html">docs.micropython.org/…/reset.html</a></li>
+    <li>machine.reset and Errors — Raspberry Pi Pico Forums. <a href="https://forums.raspberrypi.com/viewtopic.php?t=347254">forums.raspberrypi.com/viewtopic.php?t=347254</a></li>
+  </ol>
+</section>
+
+<footer>
+  <span>AI ROBOTICS · THE BODY &amp; THE BRAIN · 6 LECTURES</span>
+  <span>BY <a href="https://youssefgoher.github.io/" target="_blank" rel="noopener" style="color:var(--copper-deep);text-decoration:none">ENG. YOUSSEF GOHER ↗</a></span>
+  <span>ESP32 · MICROPYTHON · GEMINI API</span>
+</footer>
+
+</body>
+</html>

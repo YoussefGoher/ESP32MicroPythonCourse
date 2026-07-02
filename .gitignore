@@ -1,0 +1,9 @@
+# Ignore everything
+*
+
+# Whitelist index.html
+!index.html
+!README.md
+
+# Whitelist this .gitignore file so it remains tracked
+!.gitignore
